@@ -1,0 +1,14 @@
+pip
+pytest
+python-dotenv
+ruff
+pandas
+scipy
+scikit-learn
+prefect
+matplotlib
+seaborn
+mlflow
+kagglehub
+ipykernel
+-e .
