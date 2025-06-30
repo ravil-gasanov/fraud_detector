@@ -6,12 +6,14 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import GridSearchCV, StratifiedKFold
 from sklearn.pipeline import Pipeline
 
+from fraud_detector.config import (
+    FEATURE_COLUMNS,
+    MLFLOW_EXPERIMENT_NAME,
+    MLFLOW_TRACKING_URI,
+    RANDOM_STATE,
+    TARGET_COLUMN,
+)
 from fraud_detector.experiments.feature_transformer import FeatureTransformer
-
-RANDOM_STATE = 42
-
-MLFLOW_TRACKING_URI = "http://localhost:5000"
-MLFLOW_EXPERIMENT_NAME = "fraud_detection_experiment"
 
 mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
 mlflow.set_experiment(MLFLOW_EXPERIMENT_NAME)
@@ -55,9 +57,6 @@ def build_pipeline(model_name, model):
 
 
 def load_train_X_y():
-    FEATURE_COLUMNS = ["V4", "V11", "V7", "Amount"]
-    TARGET_COLUMN = "Class"
-
     data = pd.read_csv("data/train.csv")
 
     X = data[FEATURE_COLUMNS]
