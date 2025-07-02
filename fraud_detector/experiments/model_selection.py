@@ -5,6 +5,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import GridSearchCV, StratifiedKFold
 from sklearn.pipeline import Pipeline
+from loguru import logger
 
 from fraud_detector.config import (
     FEATURE_COLUMNS,
@@ -14,6 +15,7 @@ from fraud_detector.config import (
     TARGET_COLUMN,
 )
 from fraud_detector.experiments.feature_transformer import FeatureTransformer
+from fraud_detector.config import TRAIN_PATH
 
 mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
 mlflow.set_experiment(MLFLOW_EXPERIMENT_NAME)
@@ -57,7 +59,7 @@ def build_pipeline(model_name, model):
 
 
 def load_train_X_y():
-    data = pd.read_csv("data/train.csv")
+    data = pd.read_csv(TRAIN_PATH)
 
     X = data[FEATURE_COLUMNS]
     y = data[TARGET_COLUMN]
@@ -88,5 +90,5 @@ def run_experiments():
 
             gridcv.fit(X=X, y=y)
 
-            print(f"Best estimator: {gridcv.best_estimator_}")
-            print(f"Mean test f1-score: {gridcv.best_score_}")
+            logger.info(f"Best estimator: {gridcv.best_estimator_}")
+            logger.info(f"Mean test f1-score: {gridcv.best_score_}")
