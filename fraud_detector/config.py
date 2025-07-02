@@ -8,3 +8,5 @@ RANDOM_STATE = 42
 
 MLFLOW_TRACKING_URI = "http://localhost:5000"
 MLFLOW_EXPERIMENT_NAME = "fraud_detection_experiment"
+
+METRIC_THRESHOLD = 0.6  # Example threshold for F1 score
