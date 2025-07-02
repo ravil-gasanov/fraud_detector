@@ -11,4 +11,5 @@ seaborn
 mlflow
 kagglehub
 ipykernel
+loguru
 -e .
