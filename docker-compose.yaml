@@ -1,0 +1,71 @@
+services:
+  postgres:
+    image: postgres:15
+    container_name: postgres-db
+    environment:
+      - POSTGRES_DB=mlflow
+      - POSTGRES_USER=mlflow
+      - POSTGRES_PASSWORD=mlflow
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - ml-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mlflow -d mlflow"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  mlflow-server:
+    build:
+      context: .
+      dockerfile: /dockerfiles/Dockerfile.mlflow
+    container_name: mlflow-server
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "5000:5000"
+    environment:
+      - MLFLOW_BACKEND_STORE_URI=postgresql://mlflow:mlflow@postgres:5432/mlflow
+    volumes:
+      - mlflow_artifacts:/mlflow/artifacts
+    networks:
+      - ml-network
+
+  prefect-server:
+    build:
+      context: .
+      dockerfile: dockerfiles/Dockerfile.prefect
+    container_name: prefect-server
+    ports:
+      - "4200:4200"
+    environment:
+      - PREFECT_API_URL=http://prefect-server:4200
+    networks:
+      - ml-network
+
+  train-flow:
+    build:
+      context: .
+      dockerfile: /dockerfiles/Dockerfile.training_pipeline
+    container_name: train-flow
+    depends_on: [mlflow-server, prefect-server]
+    environment:
+      - PREFECT_API_URL=http://prefect-server:4200
+      - MLFLOW_TRACKING_URI=http://mlflow-server:5000
+    volumes:
+      - ./flows:/app/flows
+      - ./data:/app/data
+    networks:
+      - ml-network
+
+volumes:
+  mlflow_artifacts:
+  postgres_data:
+
+networks:
+  ml-network:
+    driver: bridge

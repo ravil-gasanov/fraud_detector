@@ -1,0 +1,13 @@
+FROM ghcr.io/mlflow/mlflow
+
+# Install PostgreSQL client for database connectivity
+RUN pip install psycopg2-binary
+
+# Create directory for MLflow artifacts
+RUN mkdir -p /mlflow/artifacts
+
+# Expose MLflow port
+EXPOSE 5000
+
+# Wait for database to be ready and start MLflow server
+CMD ["sh", "-c", "mlflow server --host 0.0.0.0 --port 5000 --backend-store-uri postgresql://mlflow:mlflow@postgres:5432/mlflow --default-artifact-root /mlflow/artifacts"]

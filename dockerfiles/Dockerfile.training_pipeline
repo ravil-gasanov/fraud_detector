@@ -1,0 +1,16 @@
+FROM python:3.10-slim
+
+WORKDIR /app
+
+# Install dependencies
+RUN pip install pandas scikit-learn prefect mlflow loguru
+
+# Copy your ETL flow files
+COPY . .
+
+# Set environment variables for service discovery
+ENV PREFECT_API_URL=http://prefect-server:4200/api
+ENV MLFLOW_TRACKING_URI=http://mlflow-server:5000
+
+# Keep container running for manual flow execution
+CMD ["tail", "-f", "/dev/null"]
