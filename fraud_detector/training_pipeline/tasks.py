@@ -1,25 +1,10 @@
 from loguru import logger
 import mlflow
 from mlflow.tracking import MlflowClient
-import pandas as pd
 from prefect import task
 from sklearn.metrics import f1_score
 
-from fraud_detector.config import (
-    FEATURE_COLUMNS,
-    TARGET_COLUMN,
-    MLFLOW_TRACKING_URI,
-)
-
-
-@task
-def load_X_y(data_path):
-    data = pd.read_csv(data_path)
-
-    X = data[FEATURE_COLUMNS]
-    y = data[TARGET_COLUMN]
-
-    return X, y
+from fraud_detector.config import MLFLOW_TRACKING_URI
 
 
 @task
