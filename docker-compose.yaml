@@ -1,23 +1,30 @@
 services:
   postgres:
-    image: postgres:15
-    container_name: postgres-db
+    image: postgres
+    restart: always
     environment:
-      - POSTGRES_DB=mlflow
-      - POSTGRES_USER=mlflow
-      - POSTGRES_PASSWORD=mlflow
+      - POSTGRES_DB=mydatabase
+      - POSTGRES_USER=myuser
+      - POSTGRES_PASSWORD=mypassword
     ports:
       - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 1s
+      timeout: 5s
+      retries: 10
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - ml-network
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U mlflow -d mlflow"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
 
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+    networks:
+      - ml-network
   mlflow-server:
     build:
       context: .
@@ -29,7 +36,7 @@ services:
     ports:
       - "5000:5000"
     environment:
-      - MLFLOW_BACKEND_STORE_URI=postgresql://mlflow:mlflow@postgres:5432/mlflow
+      - MLFLOW_BACKEND_STORE_URI=postgresql://myuser:mypassword@postgres:5432/mydatabase
     volumes:
       - mlflow_artifacts:/mlflow/artifacts
     networks:
@@ -42,8 +49,6 @@ services:
     container_name: prefect-server
     ports:
       - "4200:4200"
-    environment:
-      - PREFECT_API_URL=http://prefect-server:4200
     networks:
       - ml-network
 
@@ -54,13 +59,26 @@ services:
     container_name: train-flow
     depends_on: [mlflow-server, prefect-server]
     environment:
-      - PREFECT_API_URL=http://prefect-server:4200
+      - PREFECT_API_URL=http://prefect-server:4200/api
       - MLFLOW_TRACKING_URI=http://mlflow-server:5000
     volumes:
       - ./flows:/app/flows
       - ./data:/app/data
     networks:
       - ml-network
+    
+  batch_predict:
+    build:
+      context: .
+      dockerfile: /dockerfiles/Dockerfile.batch_predict
+    container_name: batch_predict
+    depends_on: [mlflow-server, prefect-server]
+    environment:
+      - PREFECT_API_URL=http://prefect-server:4200/api
+      - MLFLOW_TRACKING_URI=http://mlflow-server:5000
+      - DATABASE_URL=postgresql://myuser:mypassword@postgres:5432/mydatabase
+    networks:
+      - ml-network 
 
 volumes:
   mlflow_artifacts:
