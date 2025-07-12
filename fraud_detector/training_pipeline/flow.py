@@ -1,11 +1,11 @@
 from loguru import logger
 from prefect import flow
 
+from fraud_detector.common import load_X_y
 from fraud_detector.config import METRIC_THRESHOLD, MLFLOW_EXPERIMENT_NAME, TEST_PATH, TRAIN_PATH
 from fraud_detector.training_pipeline.tasks import (
     eval_model_on_test,
     load_best_model_from_experiment,
-    load_X_y,
     register_model,
     train_model,
 )
@@ -35,7 +35,7 @@ def train_flow():
             f"Model met the metric threshold of {METRIC_THRESHOLD}. "
             f"Current metric: {metric}. Registering the model."
         )
-        register_model(model=model, model_name="production_model")
+        register_model(model=model, model_name="fraud_detector_production_model")
     else:
         logger.warning(
             f"Model did not meet the metric threshold of {METRIC_THRESHOLD}. "
