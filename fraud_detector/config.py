@@ -14,3 +14,6 @@ MLFLOW_EXPERIMENT_NAME = "fraud_detection_experiment"
 PREFECT_API_URL = os.getenv("PREFECT_API_URL", "http://localhost:4200/api")
 
 METRIC_THRESHOLD = 0.6  # Example threshold for F1 score
+
+
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://user:password@localhost/db")
