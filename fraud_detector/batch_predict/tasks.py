@@ -1,11 +1,11 @@
-import os
-
+from loguru import logger
+import mlflow
 import mlflow.sklearn
 import pandas as pd
 from prefect import task
 import sqlalchemy
 
-from fraud_detector.config import DATABASE_URL
+from fraud_detector.config import DATABASE_URL, MLFLOW_TRACKING_URI, PREDICTIONS_PATH
 
 
 @task
@@ -13,6 +13,8 @@ def load_production_model():
     """
     Load the production model for batch prediction.
     """
+    mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
+
     model_name = "fraud_detector_production_model"
     model_version = "latest"
 
@@ -48,10 +50,16 @@ def save_predictions(predictions, table_name="predictions"):
         table_name: Name of the database table
     """
     # Save to database
-    engine = sqlalchemy.create_engine(DATABASE_URL)
-    predictions.to_sql(
-        table_name,
-        engine,
-        if_exists="append",
-        index=False,
-    )
+    try:
+        engine = sqlalchemy.create_engine(DATABASE_URL)
+        predictions.to_sql(
+            table_name,
+            engine,
+            if_exists="append",
+            index=False,
+        )
+    except Exception as e:
+        logger.error(f"Error saving predictions to database: {e}")
+
+    logger.info("Saving to a local csv file")
+    predictions.to_csv(PREDICTIONS_PATH, index=False)

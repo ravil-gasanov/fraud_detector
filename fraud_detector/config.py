@@ -5,6 +5,7 @@ TARGET_COLUMN = "Class"
 
 TRAIN_PATH = "data/train.csv"
 TEST_PATH = "data/test.csv"
+PREDICTIONS_PATH = "data/predictions.csv"
 
 RANDOM_STATE = 42
 
